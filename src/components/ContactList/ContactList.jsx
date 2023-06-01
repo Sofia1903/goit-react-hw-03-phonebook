@@ -1,24 +1,26 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-import ContactListItem from '../ContactListItem/ContactListItem';
-import { ListOfContacts } from '../ContactList/ContactList.styled';
+import {ContactWriper, ContactItem, ContactButton } from './ContactList.style';
 
-const ContactList = ({ contacts, onDelete }) => {
-  return (
-    <ListOfContacts>
-      {contacts.map(({ id, name, number }) => {
-        return (
-          <ContactListItem
-            key={id}
-            id={id}
-            name={name}
-            number={number}
-            onDelete={onDelete}
-          />
-        );
-      })}
-    </ListOfContacts>
-  );
-};
+const ContactList = ({ contacts, onDeleteContact }) => (
+  <ContactWriper>
+    {contacts.map(contact => (
+      <ContactItem key={contact.id}>
+        {contact.name + ' : ' + contact.number}
+        {
+          // Кнопка видалення контакту
+          <ContactButton
+            type="button"
+            name="delete"
+            onClick={() => onDeleteContact(contact.id)}
+          >
+            delete
+          </ContactButton>
+        }
+      </ContactItem>
+    ))}
+  </ContactWriper>
+);
 
 ContactList.propTypes = {
   contacts: PropTypes.arrayOf(
@@ -27,8 +29,8 @@ ContactList.propTypes = {
       name: PropTypes.string.isRequired,
       number: PropTypes.string.isRequired,
     })
-  ),
-  onDelete: PropTypes.func.isRequired,
+  ).isRequired,
+  onDeleteContact: PropTypes.func.isRequired,
 };
 
 export default ContactList;

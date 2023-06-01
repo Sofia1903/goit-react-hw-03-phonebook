@@ -1,18 +1,20 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Wrap } from '../Filter/Filter.styled';
-import { Label, Input } from '../ContactForm/ContactForm.styled';
+import { FilterWrapper, FilterLabel, FilterInput } from './Filter.style';
 
-const Filter = ({ handelSearch }) => {
+export default function Filter ({ value, onChangeFilter }) {
   return (
-    <Wrap>
-      <Label>Find contacts by name</Label>
-      <Input type="text" id="filter" onInput={handelSearch} />
-    </Wrap>
+    <FilterWrapper>
+      <FilterLabel>
+        Find contacts by name
+        <FilterInput type="text" value={value} onChange={onChangeFilter} />
+      </FilterLabel>
+    </FilterWrapper>
   );
-};
+}
 
 Filter.propTypes = {
-  handelSearch: PropTypes.func.isRequired,
+  value: PropTypes.string.isRequired,
+  onChangeFilter: PropTypes.func.isRequired,
 };
-
-export default Filter;
+ 

@@ -1,10 +1,9 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
-import { Container } from './App.styled';
-import { Section } from './Section/Section';
-import ContactForm from './ContactForm/ContactForm';
-import Filter from './Filter/Filter';
+import { Container, Title, SubTitle } from './App.style'
+import { ContactForm } from './ContactForm/ContactForm';
 import ContactList from './ContactList/ContactList';
+import Filter from './Filter/Filter';
 
 
 export class App extends Component {
@@ -18,65 +17,76 @@ export class App extends Component {
     filter: '',
   };
 
-  componentDidMount() {
-    const storedContacts = localStorage.getItem('contacts');
-    if (storedContacts) {
-      this.setState({ contacts: JSON.parse(storedContacts) });
+    componentDidMount() {
+    const contactsLS = JSON.parse(localStorage.getItem("contacts"));
+    if (contactsLS) {
+      this.setState({ contacts: contactsLS }); 
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+  componentDidUpdate(_, prevState) {
+    const { contacts } = this.state;
+    if (prevState.contacts !== contacts && contacts.length > 0) {
+      localStorage.setItem("contacts", JSON.stringify(contacts));
     }
   }
 
-  addContact = ({ name, number }) => {
+  // Додавання нового контакту в список контактів
+  formSubmitHandler = data => {
+    const { name } = data;
     const { contacts } = this.state;
 
-    if (contacts.find(item => item.name.toLowerCase() === name.toLowerCase())) {
-      return alert(`Contact "${name}" is already in contacts list`);
+    const isContactExists = contacts.some(contact => contact.name === name);
+
+    if (isContactExists) {
+      alert(`${name} is already in contacts`);
+    } else {
+      // Додавання нового контакта
+      const newContact = { id: nanoid(), ...data };
+      this.setState(prevState => ({
+        contacts: [...prevState.contacts, newContact],
+      }));
     }
-
-    const contact = {
-      id: nanoid(),
-      name,
-      number,
-    };
-
-    this.setState(prevState => ({
-      contacts: [contact, ...prevState.contacts],
-    }));
-  };
-  
-  handleSearch = event => {
-    this.setState({ filter: event.target.value.toLowerCase() });
   };
 
-  handleDelete = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  // Зміна значення фільтра
+  changeFilter = e => {
+    this.setState({ filter: e.target.value });
+  };
+
+  // Отримання відфільтрованих контактів
+  getFilterContacts = () => {
+    const { filter, contacts } = this.state;
+    const normalizedFilter = filter.toLowerCase();
+
+    return contacts.filter(contact =>
+      contact.name.toLowerCase().includes(normalizedFilter)
+    );
+  };
+
+  // Видалення контакту зі списку
+  deleteContact = contactId => {
+    this.setState(prevState => {
+      return {
+        contacts: prevState.contacts.filter(({ id }) => id !== contactId),
+      };
+    });
   };
 
   render() {
-    const { filter, contacts } = this.state;
-    const filteredContacts = contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter)
-    );
-
+    const filterContacts = this.getFilterContacts();
+    const { filter } = this.state;
     return (
       <Container>
-        <Section title='Phonebook'>
-        <ContactForm addContact={this.addContact} />
-        </Section>
-        <Section title='Contacts'>
-          <Filter handelSearch={this.handleSearch} />
-          <ContactList
-            contacts={filteredContacts}
-            onDelete={this.handleDelete}
-          />
-        </Section>
+        <Title>Phonebook</Title>
+        <ContactForm onSubmit={this.formSubmitHandler} />
+
+        <SubTitle>Contacts</SubTitle>
+        <Filter value={filter} onChangeFilter={this.changeFilter} />
+        <ContactList
+          contacts={filterContacts}
+          onDeleteContact={this.deleteContact}
+        />
       </Container>
     );
   }
